@@ -32,12 +32,12 @@ export interface Volume extends Tagged { sizeGb: number; type: 'gp3' | 'gp2' | '
 export interface Snapshot extends Tagged { volumeId: string; sizeGb: number; encrypted: boolean; tier: 'standard' | 'archive' }
 export interface ElasticIp extends Tagged { publicIp: string; instanceId?: string }
 
-export interface LaunchTemplate extends Tagged { ami: string; type: string; sgIds: string[]; iamRole?: string; userData?: string; version: number }
+export interface LaunchTemplate extends Tagged { ami: string; type: string; sgIds: string[]; iamRole?: string; userData?: string; version: number; versions?: { version: number; ami: string; type: string; sgIds: string[]; iamRole?: string; userData?: string; description?: string; createdAt: number }[] }
 export interface TargetGroup extends Tagged { vpcId: string; protocol: 'HTTP' | 'HTTPS' | 'TCP'; port: number; healthPath: string; targets: string[] }
 export interface Listener { port: number; protocol: 'HTTP' | 'HTTPS' | 'TCP' | 'TLS'; targetGroupId: string; certificate?: string; redirectToHttps?: boolean }
 export interface LoadBalancer extends Tagged { type: 'application' | 'network'; scheme: 'internet-facing' | 'internal'; vpcId: string; subnetIds: string[]; sgIds: string[]; listeners: Listener[]; dnsName: string; crossZone: boolean; wafAclId?: string }
 export interface ScalingPolicy { id: string; type: 'target-tracking' | 'step' | 'scheduled'; metric: 'cpu' | 'requests' | 'queue-depth'; target: number; schedule?: string }
-export interface AutoScalingGroup extends Tagged { launchTemplateId: string; subnetIds: string[]; min: number; max: number; desired: number; targetGroupIds: string[]; healthCheck: 'EC2' | 'ELB'; policies: ScalingPolicy[]; load: number /* simulated demand % */ }
+export interface AutoScalingGroup extends Tagged { launchTemplateId: string; subnetIds: string[]; min: number; max: number; desired: number; targetGroupIds: string[]; healthCheck: 'EC2' | 'ELB'; policies: ScalingPolicy[]; load: number /* simulated demand % */; healthGraceSec?: number; cooldownSec?: number }
 
 export interface S3Object { key: string; sizeKb: number; storageClass: StorageClass; versionId: string; isDeleteMarker?: boolean; lastModified: number; encryption: 'SSE-S3' | 'SSE-KMS' | 'none' }
 export type StorageClass = 'STANDARD' | 'INTELLIGENT_TIERING' | 'STANDARD_IA' | 'ONEZONE_IA' | 'GLACIER_IR' | 'GLACIER' | 'DEEP_ARCHIVE' | 'EXPRESS_ONEZONE';
@@ -45,6 +45,8 @@ export interface LifecycleRule { id: string; prefix: string; transitions: { days
 export interface Bucket extends Tagged {
   versioning: 'Disabled' | 'Enabled' | 'Suspended'; blockPublicAccess: boolean; defaultEncryption: 'SSE-S3' | 'SSE-KMS'; kmsKeyId?: string;
   policy?: string; objects: S3Object[]; lifecycle: LifecycleRule[]; replicationTo?: string; objectLock: boolean; staticWebsite: boolean; transferAcceleration: boolean;
+  /** S3 console extras: the four BPA settings, ACL mode, bucket key, dual-layer (DSSE-KMS) on top of defaultEncryption 'SSE-KMS'. */
+  publicAccessBlock?: boolean[]; objectOwnership?: 'BucketOwnerEnforced' | 'BucketOwnerPreferred' | 'ObjectWriter'; bucketKey?: boolean; dsse?: boolean;
 }
 
 export interface IamStatement { Effect: 'Allow' | 'Deny'; Action: string | string[]; Resource: string | string[]; Principal?: unknown; Condition?: unknown }
@@ -53,18 +55,20 @@ export interface IamUser extends Tagged { groupIds: string[]; policyIds: string[
 export interface IamGroup extends Tagged { policyIds: string[] }
 export interface IamRole extends Tagged { trustedEntity: string /* 'ec2.amazonaws.com' | 'lambda.amazonaws.com' | 'arn:aws:iam::<acct>:root' | ... */; policyIds: string[]; description: string }
 
-export interface KmsKey extends Tagged { alias: string; managedBy: 'aws' | 'customer'; rotation: boolean; enabled: boolean; multiRegion: boolean; keyUsers: string[] }
+export interface KmsKey extends Tagged { alias: string; managedBy: 'aws' | 'customer'; rotation: boolean; enabled: boolean; multiRegion: boolean; keyUsers: string[] /* IAM user/role ids */; keyAdmins?: string[]; keySpec?: string /* SYMMETRIC_DEFAULT | RSA_2048 | ECC_NIST_P256 ... */; description?: string; deletionDate?: number /* set while pending deletion */ }
 
 export interface DbInstance extends Tagged {
   engine: 'mysql' | 'postgres' | 'mariadb' | 'aurora-mysql' | 'aurora-postgresql' | 'sqlserver' | 'oracle';
   instanceClass: string; storageGb: number; multiAz: boolean; az: Az; standbyAz?: Az; subnetIds: string[]; sgIds: string[];
   encrypted: boolean; publiclyAccessible: boolean; backupRetentionDays: number; status: 'available' | 'rebooting' | 'failing-over' | 'creating' | 'modifying';
   readReplicaOf?: string; endpoint: string; events: { t: number; msg: string }[];
+  kmsKeyId?: string; multiAzCluster?: boolean; snapshots?: { id: string; t: number }[];
 }
 export interface DynamoTable extends Tagged {
   partitionKey: string; sortKey?: string; mode: 'on-demand' | 'provisioned'; rcu: number; wcu: number;
   gsis: { name: string; pk: string; sk?: string }[]; itemCount: number; pitr: boolean; streams: boolean; globalReplicas: string[]; ttlAttribute?: string;
   items: Record<string, string>[];
+  tableClass?: 'STANDARD' | 'STANDARD_IA'; backups?: { name: string; t: number }[];
 }
 
 export interface LambdaFunction extends Tagged {
@@ -90,11 +94,12 @@ export interface Distribution extends Tagged {
   domainName: string; origins: { id: string; type: 's3' | 'alb' | 'custom'; target: string; oac: boolean }[];
   viewerProtocol: 'allow-all' | 'redirect-to-https' | 'https-only'; priceClass: 'All' | '200' | '100'; defaultTtl: number;
   wafAclId?: string; geoRestriction?: string; enabled: boolean; cacheHitRate: number;
+  cachePolicy?: string; aliases?: string[];
 }
 
 export interface Alarm extends Tagged { metric: string; resourceId: string; comparison: '>' | '<'; threshold: number; periodMin: number; actions: string[]; state: 'OK' | 'ALARM' | 'INSUFFICIENT_DATA' }
 export interface LogGroup extends Tagged { retentionDays: number | null; storedMb: number }
-export interface Budget extends Tagged { amount: number; alertPercent: number; email: string; kind: 'cost' | 'usage' }
+export interface Budget extends Tagged { amount: number; alertPercent: number; email: string; kind: 'cost' | 'usage'; period?: 'MONTHLY' | 'QUARTERLY' | 'ANNUALLY' }
 export interface TrailCfg extends Tagged { multiRegion: boolean; bucket: string; dataEvents: boolean; logValidation: boolean }
 
 export interface CloudEvent { t: number; service: string; msg: string } // CloudTrail-ish activity log

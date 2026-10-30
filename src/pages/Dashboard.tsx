@@ -7,17 +7,17 @@ import { PASS } from '../lib/scoring';
 import { Panel, Bar, Btn } from '../ui/bits';
 import { labs } from '../labs';
 
-function ScoreGauge({ score }: { score: number }) {
+function ScoreGauge({ score, unknown }: { score: number; unknown?: boolean }) {
   const pct = (score - 100) / 900;
   const passPct = (PASS - 100) / 900;
   return (
     <div>
       <div className="flex items-baseline gap-2">
-        <span className="font-display text-5xl font-extrabold tabular-nums" style={{ color: score >= PASS ? 'var(--ok)' : 'var(--ink)' }}>{score}</span>
+        <span className="font-display text-5xl font-extrabold tabular-nums" style={{ color: !unknown && score >= PASS ? 'var(--ok)' : 'var(--ink)' }}>{unknown ? '—' : score}</span>
         <span className="text-muted">estimated score / 1000</span>
       </div>
       <div className="relative mt-3 h-3 rounded-full bg-sunk">
-        <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct * 100}%`, background: score >= PASS ? 'var(--ok)' : 'var(--xp)' }} />
+        <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${unknown ? 0 : pct * 100}%`, background: score >= PASS ? 'var(--ok)' : 'var(--xp)' }} />
         <div className="absolute -top-1.5 -bottom-1.5 w-0.5 bg-ink" style={{ left: `${passPct * 100}%` }} title="720 to pass" />
       </div>
       <div className="relative text-xs text-muted mt-1 h-4"><span className="absolute -translate-x-1/2" style={{ left: `${passPct * 100}%` }}>720 pass</span></div>
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <Panel title="Exam readiness" className="lg:col-span-2" action={<Link to="/exam" className="underline">Take a mock exam</Link>}>
-          <ScoreGauge score={r.estimate} />
+          <ScoreGauge score={r.estimate} unknown={r.answered < 10 && !r.mocks} />
           <p className="text-sm text-muted mt-1">{r.answered < 30 ? 'Answer at least 30 questions for a meaningful estimate.' : r.mocks ? `Based on your last ${r.mocks} mock exam${r.mocks > 1 ? 's' : ''} plus recent practice.` : 'Based on recent practice. A full mock exam sharpens this.'}</p>
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3 mt-5">
             {DOMAINS.map((d) => (

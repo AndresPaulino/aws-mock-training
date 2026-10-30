@@ -53,7 +53,7 @@ export default function ConsoleApp() {
           <span className="relative leading-none">aws<span className="absolute left-0 right-0 -bottom-1 h-[3px] rounded-full bg-[#ff9900] [clip-path:ellipse(60%_100%_at_50%_0)]" /></span>
         </Link>
         <button onClick={() => setMenu(!menu)} className="px-2 py-1 rounded hover:bg-white/10 flex items-center gap-1">▦ <span className="hidden sm:inline">Services</span></button>
-        <div className="relative flex-1 max-w-[560px]">
+        <div className="relative flex-1 min-w-[110px] max-w-[560px]">
           <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search    [Alt+S]" className="w-full bg-[#0f1b2a] border border-[#5f6b7a] rounded-md px-3 py-[3px] text-white placeholder:text-[#8d99a8]"
             onKeyDown={(e) => { if (e.key === 'Enter' && matches[0]) { nav(preserve(`/console/${matches[0].path}`)); setQ(''); } }} />
           {matches.length > 0 && (
@@ -64,15 +64,15 @@ export default function ConsoleApp() {
           )}
         </div>
         <div className="ml-auto flex items-center gap-1">
-          <span className="hidden md:inline px-2 py-0.5 rounded bg-[#0f1b2a] border border-[#5f6b7a] tabular-nums" title="Simulated: what everything running in this account costs per hour, right now">💸 {usd(burn, 3)}/hr · MTD {usd(cloud.accruedUsd)}</span>
-          <button onClick={() => tutor.open()} className="px-2 py-1 rounded hover:bg-white/10" title="Ask the tutor about this console page">🎓 Tutor</button>
+          <span className="hidden lg:inline whitespace-nowrap px-2 py-0.5 rounded bg-[#0f1b2a] border border-[#5f6b7a] tabular-nums" title="Simulated: what everything running in this account costs per hour, right now">💸 {usd(burn, 3)}/hr · MTD {usd(cloud.accruedUsd)}</span>
+          <button onClick={() => tutor.open()} className="px-2 py-1 rounded hover:bg-white/10 whitespace-nowrap" title="Ask the tutor about this console page">🎓 Tutor</button>
           {isGlobal ? <span className="px-2 py-1 text-[#d1d5db]" title="This service is global, not Regional">Global</span> : (
-            <select value={cloud.region} onChange={(e) => mutate((c) => { c.region = e.target.value; })} className="bg-transparent hover:bg-white/10 rounded px-1 py-1" aria-label="Region">
+            <select value={cloud.region} onChange={(e) => mutate((c) => { c.region = e.target.value; })} className="bg-transparent hover:bg-white/10 rounded px-1 py-1 max-w-[150px] lg:max-w-none" aria-label="Region">
               {REGIONS.map((r) => <option key={r.id} value={r.id} className="text-black">{r.name} · {r.id}</option>)}
             </select>
           )}
-          <span className="px-2 py-1 hidden lg:inline text-[#d1d5db]">Account {cloud.accountId.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3')}</span>
-          <Link to="/" className="ml-1 px-3 py-1 rounded-full bg-[#ff9900] !text-[#000716] font-bold" style={{ textDecoration: 'none' }}>Exit to Gauntlet</Link>
+          <span className="px-2 py-1 hidden xl:inline whitespace-nowrap text-[#d1d5db]">Account {cloud.accountId.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3')}</span>
+          <Link to="/" className="ml-1 px-3 py-1 rounded-full bg-[#ff9900] !text-[#000716] font-bold whitespace-nowrap" style={{ textDecoration: 'none' }}>Exit to Gauntlet</Link>
         </div>
       </header>
       {menu && (

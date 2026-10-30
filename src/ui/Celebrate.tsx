@@ -1,5 +1,5 @@
 // Toasts for XP, badges and rank-ups. Badge checks run whenever progress changes.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { create } from 'zustand';
 import { useStore } from '../store/store';
 import { BADGES, rankOf } from '../lib/gamify';
@@ -40,10 +40,10 @@ export function Toaster() {
   );
 }
 function ToastItem({ t, onDone }: { t: Toast; onDone: () => void }) {
-  const [, set] = useState(0);
-  useEffect(() => { const h = setTimeout(onDone, t.big ? 6000 : 3500); return () => clearTimeout(h); }, [onDone, t.big]);
+  // Depend on the toast id only: parents re-render often (the console sim ticks every 2 s).
+  useEffect(() => { const h = setTimeout(() => useToasts.getState().drop(t.id), t.big ? 6000 : 3500); return () => clearTimeout(h); }, [t.id, t.big]);
   return (
-    <button onClick={onDone} className={`animate-pop text-left flex gap-3 items-start rounded-xl border px-4 py-3 shadow-lg ${t.big ? 'bg-ink text-paper border-ink' : 'bg-surface border-line'}`} onMouseEnter={() => set(1)}>
+    <button onClick={onDone} className={`animate-pop text-left flex gap-3 items-start rounded-xl border px-4 py-3 shadow-lg ${t.big ? 'bg-ink text-paper border-ink' : 'bg-surface border-line'}`}>
       {t.icon && <span className="text-2xl leading-none">{t.icon}</span>}
       <span><span className="block font-semibold">{t.title}</span>{t.body && <span className="block text-sm opacity-80">{t.body}</span>}</span>
     </button>

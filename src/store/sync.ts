@@ -24,6 +24,8 @@ async function save() {
 }
 
 export async function initSync() {
+  // Another tab saved: pick up its state instead of overwriting it later.
+  window.addEventListener('storage', (e) => { if (e.key === 'cloud-gauntlet') void useStore.persist.rehydrate(); });
   try {
     const r = await fetch('/api/progress');
     const type = r.headers.get('content-type') ?? '';

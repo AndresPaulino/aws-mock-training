@@ -32,3 +32,20 @@ const g = grade(scn, { nodes: [{ id: 'a', service: 'alb' }, { id: 'b', service: 
 assert.equal(g.pct, 100);
 assert.equal(grade(scn, { nodes: [{ id: 'n', service: 'nat-gateway' }], edges: [] }).pct, 0);
 console.log('Grading checks passed.');
+
+// Reachability
+import { seedCloud } from '../src/cloud/seed.ts';
+import { analyze } from '../src/cloud/reach.ts';
+const c = seedCloud();
+c.instances.push({ id: 'i-1', name: 'web', region: 'us-east-1', createdAt: 0, type: 't3.micro', ami: 'ami', subnetId: 'subnet-0def0000000000a', sgIds: ['sg-0default0000000'], state: 'running', privateIp: '172.31.0.4', publicIp: '3.3.3.3', volumeIds: [], launchedAt: 0, purchase: 'on-demand', imdsv2: true, cpu: 1 });
+assert.ok(analyze(c, 'i-1', { kind: 'internet-out', port: 443 }).ok, 'default VPC instance reaches internet');
+assert.ok(!analyze(c, 'i-1', { kind: 'internet-in', port: 80 }).ok, 'default SG blocks inbound 80');
+c.securityGroups[0].inbound.push({ protocol: 'tcp', from: 80, to: 80, source: '0.0.0.0/0' });
+assert.ok(analyze(c, 'i-1', { kind: 'internet-in', port: 80 }).ok, 'open port 80');
+c.nacls[0].inbound.unshift({ num: 50, protocol: 'tcp', from: 80, to: 80, cidr: '0.0.0.0/0', action: 'deny' });
+assert.ok(!analyze(c, 'i-1', { kind: 'internet-in', port: 80 }).ok, 'NACL deny wins by lower rule number');
+c.routeTables[0].routes = c.routeTables[0].routes.filter((r) => r.target === 'local');
+assert.ok(!analyze(c, 'i-1', { kind: 's3' }).ok, 'private subnet without endpoint cannot reach S3');
+c.endpoints.push({ id: 'vpce-1', name: '', region: 'us-east-1', createdAt: 0, vpcId: 'vpc-0default0000000', service: 'com.amazonaws.us-east-1.s3', type: 'Gateway', routeTableIds: ['rtb-0default0000000'], subnetIds: [], sgIds: [], privateDns: false });
+assert.ok(analyze(c, 'i-1', { kind: 's3' }).ok, 'gateway endpoint gives S3 access');
+console.log('Reachability checks passed.');

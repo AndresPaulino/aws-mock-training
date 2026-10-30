@@ -1,11 +1,26 @@
 // Building blocks for mock AWS console pages (Cloudscape-like look). Every service console uses these.
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../store/store';
 import type { CloudState } from '../cloud/types';
 
-/** Read the simulated cloud. */
-export const useCloud = <T,>(sel: (c: CloudState) => T) => useStore((s) => sel(s.cloud));
+/** Read the simulated cloud. Shallow-compared, so selectors may return filtered arrays or objects (but not functions). */
+export function useCloud<T>(sel: (c: CloudState) => T): T {
+  const prev = useRef<{ v: T } | null>(null);
+  return useStore((s) => {
+    const next = sel(s.cloud);
+    if (prev.current && same(prev.current.v, next, 2)) return prev.current.v;
+    prev.current = { v: next };
+    return next;
+  });
+}
+/** Structural equality down to `depth` levels (elements beyond that compared by reference). */
+function same(a: unknown, b: unknown, depth: number): boolean {
+  if (Object.is(a, b)) return true;
+  if (depth === 0 || typeof a !== 'object' || typeof b !== 'object' || !a || !b || Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  return ka.length === kb.length && ka.every((k) => same((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k], depth - 1));
+}
 export const useCloudActions = () => {
   const s = useStore.getState();
   return { put: s.put, patch: s.patch, remove: s.remove, mutate: s.mutateCloud, log: s.logEvent };

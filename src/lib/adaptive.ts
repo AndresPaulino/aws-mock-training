@@ -107,6 +107,6 @@ export function studyPlan(p: Progress): { weeks: PlanWeek[]; currentWeek: number
     weeks.push({ index: i, start: ws, end: we, lessonIds: ids, isBuffer, focus: isBuffer ? 'Mock exams, weak-spot drills, final boss' : mods.length ? `Module ${mods.map((m) => m.slice(1)).join(' + ')}` : i < currentWeek ? 'Done' : 'Review & labs' });
   }
   // Ideal pace: lessons spread evenly from the start date.
-  const idealDone = Math.round((outline.length * Math.min(1, (now.getTime() - start.getTime()) / ((totalWeeks - 1) * 7 * DAY))));
+  const idealDone = Math.floor((outline.length * Math.min(1, (now.getTime() - start.getTime()) / ((totalWeeks - 1) * 7 * DAY))));
   return { weeks, currentWeek, behindBy: Math.max(0, idealDone - doneIds.length), daysLeft: Math.max(0, Math.ceil((exam.getTime() - now.getTime()) / DAY)) };
 }
