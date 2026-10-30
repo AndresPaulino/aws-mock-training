@@ -2,7 +2,8 @@
 import type { Lab } from './index';
 import type { Bucket, CloudState } from '../cloud/types';
 
-const s3Log = (c: CloudState, re: RegExp) => c.events.some((e) => e.service === 's3' && re.test(e.msg));
+/** The console logs "Delete marker created for <key> in <bucket>" / "Removed delete marker for <key> in <bucket>: object restored". */
+const s3Log = (c: CloudState, b: Bucket, prefix: string) => c.events.some((e) => e.service === 's3' && e.msg.startsWith(prefix) && e.msg.includes(` in ${b.name}`));
 const versioned = (c: CloudState) => c.buckets.filter((b) => b.versioning === 'Enabled');
 const multiVersionKey = (b: Bucket) => {
   const n = new Map<string, number>();
@@ -32,13 +33,13 @@ const labs: Lab[] = [
         title: 'Delete the object',
         detail: 'With **Show versions** off, select the object and **Delete** it. S3 adds a delete marker; the object vanishes from the list.',
         hint: 'Do not delete a specific version (that is permanent). Delete with Show versions off.',
-        check: (c) => s3Log(c, /^Delete marker created for/) || versioned(c).some((b) => b.objects.some((o) => o.isDeleteMarker)),
+        check: (c) => versioned(c).some((b) => multiVersionKey(b) && (s3Log(c, b, 'Delete marker created for') || b.objects.some((o) => o.isDeleteMarker))),
       },
       {
         title: 'Recover it by deleting the delete marker',
         detail: 'Turn on **Show versions**, select the **Delete marker** row (it is the latest version) and delete it (or use **Restore**). The previous version becomes current again.',
         hint: 'Type "delete" to confirm. The object reappears when Show versions is off.',
-        check: (c) => s3Log(c, /^Removed delete marker for .*restored/) && versioned(c).some((b) => multiVersionKey(b) && b.objects.some((o) => !o.isDeleteMarker && !latestIsMarker(b, o.key))),
+        check: (c) => versioned(c).some((b) => multiVersionKey(b) && s3Log(c, b, 'Removed delete marker for') && b.objects.some((o) => !o.isDeleteMarker && !latestIsMarker(b, o.key))),
       },
     ],
     debrief: 'Versioning protects against accidental deletes and overwrites: a plain DELETE only adds a delete marker, and removing the marker restores the object. Exam pairings: **versioning + MFA Delete** to stop permanent deletes, **versioning is required for replication and Object Lock**, and old versions cost money, so add a noncurrent-version expiration lifecycle rule.',

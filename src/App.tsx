@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from './ui/Layout';
 import { useStore } from './store/store';
 import { useBadgeWatcher } from './ui/Celebrate';
+import { ErrorBoundary } from './ui/ErrorBoundary';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PathMap = lazy(() => import('./pages/PathMap'));
@@ -31,9 +32,10 @@ export function App() {
 
   const fallback = <div className="p-10 text-muted">Loading…</div>;
   if (!onboarded) return <Suspense fallback={fallback}><Onboarding /></Suspense>;
-  if (loc.pathname.startsWith('/console')) return <Suspense fallback={fallback}><ConsoleApp /></Suspense>;
+  if (loc.pathname.startsWith('/console')) return <ErrorBoundary resetKey="console"><Suspense fallback={fallback}><ConsoleApp /></Suspense></ErrorBoundary>;
   return (
     <Layout>
+      <ErrorBoundary resetKey={loc.pathname}>
       <Suspense fallback={fallback}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -56,6 +58,7 @@ export function App() {
           <Route path="*" element={<Dashboard />} />
         </Routes>
       </Suspense>
+      </ErrorBoundary>
     </Layout>
   );
 }

@@ -5,7 +5,7 @@ import { questionMap, DOMAINS } from '../content';
 import { isCorrect } from '../lib/adaptive';
 import { scaledScore } from '../lib/scoring';
 import { LETTERS } from '../ui/QuestionCard';
-import { Md } from '../ui/Md';
+import { Md, MdInline } from '../ui/Md';
 import { Btn, Empty, fmtTime } from '../ui/bits';
 import { toast } from '../ui/Celebrate';
 import type { DomainId } from '../content/types';
@@ -47,10 +47,14 @@ export default function ExamRunner() {
   useEffect(() => { const h = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(h); }, []);
 
   const left = attempt ? attempt.durationSec - (now - attempt.startedAt) / 1000 : 0;
-  useEffect(() => { if (attempt && !attempt.finishedAt && left <= 0) { finishAttempt(attempt); nav(`/review/${attempt.id}`, { replace: true }); } }, [left, attempt, nav]);
+  useEffect(() => {
+    if (!attempt) return;
+    if (attempt.finishedAt) nav(`/review/${attempt.id}`, { replace: true });
+    else if (left <= 0) { finishAttempt(attempt); nav(`/review/${attempt.id}`, { replace: true }); }
+  }, [left, attempt, nav]);
 
   if (!attempt) return <Empty title="Exam not found" />;
-  if (attempt.finishedAt) { nav(`/review/${attempt.id}`, { replace: true }); return null; }
+  if (attempt.finishedAt) return null;
   const q = questionMap.get(attempt.questionIds[i]);
   if (!q) return <Empty title="Question missing" />;
   const picked = attempt.answers[i] ?? [];
@@ -100,7 +104,7 @@ export default function ExamRunner() {
           {q.options.map((o, k) => (
             <button key={k} onClick={() => choose(k)} className={`w-full text-left flex gap-3 items-start rounded-xl border-2 px-4 py-3 ${picked.includes(k) ? 'border-ink bg-sunk' : 'border-line hover:border-muted'}`}>
               <span className={`shrink-0 w-7 h-7 grid place-items-center ${multi ? 'rounded-md' : 'rounded-full'} border-2 font-semibold text-sm ${picked.includes(k) ? 'bg-ink text-paper border-ink' : 'border-line'}`}>{LETTERS[k]}</span>
-              <span className="pt-0.5">{o}</span>
+              <span className="pt-0.5"><MdInline text={o} /></span>
             </button>
           ))}
         </div>

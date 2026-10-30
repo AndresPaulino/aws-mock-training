@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../store/store';
 import { pickDrill } from '../lib/adaptive';
@@ -16,9 +16,10 @@ export default function Practice() {
   const [domain, setDomain] = useState<DomainId>('secure');
   const [mod, setMod] = useState('m1');
   const [count, setCount] = useState(10);
-  const [session, setSession] = useState<Question[] | null>(params.get('mode') ? null : null);
+  const [session, setSession] = useState<Question[] | null>(null);
   const [i, setI] = useState(0);
   const [right, setRight] = useState(0);
+  const [answered, setAnswered] = useState(false);
   const missed = Object.entries(p.questions).filter(([, s]) => !s.lastCorrect).length;
   const flagged = Object.values(p.questions).filter((s) => s.flagged).length;
   const unseen = questions.filter((q) => !p.questions[q.id]).length;
@@ -34,7 +35,7 @@ export default function Practice() {
     if (mode === 'new') qs = pickDrill(p, { count: 200 }).filter((q) => !p.questions[q.id]).slice(0, count);
     setSession(qs); setI(0); setRight(0);
   };
-  useMemo(() => { if (params.get('mode') && !session) setTimeout(start, 0); }, []); // eslint-disable-line
+  useEffect(() => { if (params.get('mode')) start(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (session) {
     if (!session.length) return <div><PageTitle title="Practice" /><Empty title="No questions match">Try another mode.</Empty><Btn className="mt-4" onClick={() => setSession(null)}>Back</Btn></div>;
@@ -53,8 +54,8 @@ export default function Practice() {
           <div className="flex-1 h-1.5 rounded-full bg-sunk overflow-hidden"><div className="h-full bg-xp" style={{ width: `${(i / session.length) * 100}%` }} /></div>
           <span className="text-sm tabular-nums text-muted">{right} correct</span>
         </div>
-        <QuestionCard key={session[i].id} q={session[i]} index={i} total={session.length} onAnswered={(ok) => ok && setRight((r) => r + 1)} />
-        <div className="mt-3 flex justify-end"><Btn onClick={() => setI(i + 1)}>{i + 1 < session.length ? 'Next question' : 'Finish'}</Btn></div>
+        <QuestionCard key={session[i].id} q={session[i]} index={i} total={session.length} onAnswered={(ok) => { setAnswered(true); if (ok) setRight((r) => r + 1); }} />
+        <div className="mt-3 flex justify-end"><Btn kind={answered ? 'primary' : 'ghost'} onClick={() => { setAnswered(false); setI(i + 1); }}>{!answered ? 'Skip' : i + 1 < session.length ? 'Next question' : 'Finish'}</Btn></div>
       </div>
     );
   }

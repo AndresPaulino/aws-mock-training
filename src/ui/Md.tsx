@@ -4,7 +4,7 @@ import { Fragment, type ReactNode } from 'react';
 
 function inline(text: string): ReactNode[] {
   const out: ReactNode[] = [];
-  const re = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*|_[^_\s][^_]*_)/g;
+  const re = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*)/g;
   let last = 0, m: RegExpExecArray | null, k = 0;
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
@@ -45,3 +45,6 @@ export function Md({ text, className }: { text: string; className?: string }) {
     </div>
   );
 }
+
+/** Inline-only markdown (bold, italic, code) for short strings like answer options. */
+export const MdInline = ({ text }: { text: string }) => <>{inline(text)}</>;

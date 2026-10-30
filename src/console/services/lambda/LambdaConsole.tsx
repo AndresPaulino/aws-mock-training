@@ -130,7 +130,7 @@ function FunctionDetail() {
   const test = () => {
     let ev: unknown;
     try { ev = JSON.parse(event); setEventErr(''); } catch { setEventErr('Event JSON is not valid.'); return; }
-    let r: InvokeResult | undefined;
+    let r = undefined as InvokeResult | undefined;
     mutate((d) => { r = invokeLambda(d, f.id, ev, 'Console test'); });
     log('lambda', `Invoke ${f.name} (test event): ${r?.ok ? 'Succeeded' : 'Failed'}`);
     setResult(r ?? null);

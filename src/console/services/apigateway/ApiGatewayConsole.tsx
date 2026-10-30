@@ -222,7 +222,7 @@ function TestTab({ a }: { a: ApiGateway }) {
     if (a.authorizer && !creds) return setOut({ status: a.authorizer === 'IAM' ? 403 : 401, body: JSON.stringify({ message: a.authorizer === 'IAM' ? 'Missing Authentication Token' : 'Unauthorized' }), ms: t0 });
     if (a.throttleRps <= 0) return setOut({ status: 429, body: JSON.stringify({ message: 'Too Many Requests' }), ms: t0 });
     if (!r.lambda || !findLambda(c, r.lambda)) return setOut({ status: 500, body: JSON.stringify({ message: 'Internal Server Error' }), ms: t0 });
-    let res: ReturnType<typeof invokeLambda>;
+    let res = undefined as ReturnType<typeof invokeLambda>;
     const event = { version: '2.0', routeKey: `${r.method} ${r.path}`.trim(), rawPath: r.path, requestContext: { apiId: a.id, stage: a.stage, http: { method: r.method || 'WEBSOCKET' } }, body };
     mutate((d) => { res = invokeLambda(d, r.lambda, event, `API Gateway ${a.name} ${r.method} ${r.path}`.replace(/\s+/g, ' ')); });
     log('apigateway', `Test invoke ${a.name} ${r.method} ${r.path}: ${res?.ok ? 200 : 502}`);

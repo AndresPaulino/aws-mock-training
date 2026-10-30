@@ -43,4 +43,4 @@ A lab is a guided exercise whose steps are checked live against `CloudState`. Wr
 ## Rules
 - Only edit the files your brief assigns you. Don't edit `kit.tsx`, `types.ts`, `store.ts`, `registry.ts` or other agents' service folders. If you truly need a new field on a resource type, add it as **optional** in `src/cloud/types.ts` and say so in your report (keep it minimal; another agent may also touch types.ts, so re-read the file immediately before editing it and make one small Edit).
 - No new npm dependencies.
-- Validate with `npx tsc -p tsconfig.wip.json` (no errors in your files) and `npm test`. A dev server is already running at http://localhost:5173; don't start another one. If you have a browser tool, you may look at `http://localhost:5173/#/console/<svc>`, but don't spend long on it.
+- Validate with `npx tsc -p tsconfig.json --noEmit` (no errors in your files) and `npm test`. A dev server is already running at http://localhost:5173; don't start another one. If you have a browser tool, you may look at `http://localhost:5173/#/console/<svc>`, but don't spend long on it.

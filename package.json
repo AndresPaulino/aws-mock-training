@@ -9,7 +9,7 @@
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
     "test": "node scripts/check-content.ts",
-    "test:logic": "node scripts/check-logic.ts"
+    "test:logic": "node scripts/check-logic.ts && node src/console/services/route53/resolve.check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

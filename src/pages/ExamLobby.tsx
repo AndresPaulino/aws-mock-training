@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore, type Attempt, type AttemptKind } from '../store/store';
 import { buildExam, buildBoss } from '../lib/adaptive';
@@ -22,8 +22,11 @@ export default function ExamLobby() {
   const nav = useNavigate();
   const [params] = useSearchParams();
   const attempts = useStore((s) => s.attempts);
+  const started = useRef(false); // StrictMode runs effects twice in dev; start only one attempt
   useEffect(() => {
     const st = params.get('start');
+    if (!st || started.current) return;
+    started.current = true;
     if (st === 'final') nav(`/exam/${startAttempt('final')}`, { replace: true });
     if (st === 'boss') nav(`/exam/${startAttempt('boss', params.get('domain') as DomainId)}`, { replace: true });
   }, []); // eslint-disable-line

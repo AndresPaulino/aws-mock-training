@@ -26,7 +26,7 @@ export function ConsoleHome({ recent }: { recent: string[] }) {
           <div className="text-[28px] font-bold tabular-nums">{usd(cloud.accruedUsd)}</div>
           <div className="text-[#5f6b7a] text-[13px]">Month-to-date (simulated clock: 1 s = 1 min)</div>
           <div className="mt-2">Current burn rate: <b>{usd(hourlyTotal(cloud), 3)}/hour</b> ≈ {usd(hourlyTotal(cloud) * 730)}/month</div>
-          <table className="w-full text-[13px] mt-3">{lines.map((l, i) => <tr key={i} className="border-t border-[#e9ebed]"><td className="py-1">{l.service}</td><td className="py-1 text-[#5f6b7a] truncate max-w-[140px]">{l.note}</td><td className="text-right tabular-nums">{usd(l.hourly, 4)}/h</td></tr>)}</table>
+          <table className="w-full text-[13px] mt-3"><tbody>{lines.map((l, i) => <tr key={i} className="border-t border-[#e9ebed]"><td className="py-1">{l.service}</td><td className="py-1 text-[#5f6b7a] truncate max-w-[140px]">{l.note}</td><td className="text-right tabular-nums">{usd(l.hourly, 4)}/h</td></tr>)}</tbody></table>
           {!lines.length && <p className="text-[#5f6b7a]">Nothing is running. The default VPC itself is free.</p>}
           <Link to="/console/billing" className="block mt-2 text-[13px]">Go to Billing and Cost Management</Link>
         </Panel>

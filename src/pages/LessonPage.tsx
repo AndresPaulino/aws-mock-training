@@ -29,6 +29,7 @@ export default function LessonPage() {
   const [qi, setQi] = useState(0);
   const [score, setScore] = useState(0);
   const [quizDone, setQuizDone] = useState(false);
+  const [answered, setAnswered] = useState(false);
   useEffect(() => { visit(id); setQi(0); setScore(0); setQuizDone(false); }, [id, visit]);
   useTutorContext(lesson ? `Lesson: ${lesson.title}` : '', lesson ? `Lesson "${lesson.title}". Summary: ${lesson.summary}\nKey facts:\n- ${lesson.keyFacts.join('\n- ')}\nExam tips:\n- ${lesson.examTips.join('\n- ')}` : '');
 
@@ -126,8 +127,8 @@ export default function LessonPage() {
         </div>
         {quiz.length === 0 ? <p className="text-muted">No questions for this lesson yet.</p> : !quizDone ? (
           <div>
-            <QuestionCard key={quiz[qi].id} q={quiz[qi]} index={qi} total={quiz.length} onAnswered={(ok) => ok && setScore((s) => s + 1)} />
-            <div className="mt-3 flex justify-end"><Btn onClick={() => (qi + 1 < quiz.length ? setQi(qi + 1) : setQuizDone(true))}>{qi + 1 < quiz.length ? 'Next question' : 'See result'}</Btn></div>
+            <QuestionCard key={quiz[qi].id} q={quiz[qi]} index={qi} total={quiz.length} onAnswered={(ok) => { setAnswered(true); if (ok) setScore((s) => s + 1); }} />
+            <div className="mt-3 flex justify-end"><Btn kind={answered ? 'primary' : 'ghost'} onClick={() => { setAnswered(false); if (qi + 1 < quiz.length) setQi(qi + 1); else setQuizDone(true); }}>{!answered ? 'Skip' : qi + 1 < quiz.length ? 'Next question' : 'See result'}</Btn></div>
           </div>
         ) : (
           <div className="rounded-2xl border border-line bg-surface p-5">

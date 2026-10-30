@@ -11,6 +11,7 @@ import { LabDrawer, useActiveLab } from './LabDrawer';
 import { ConsoleHome } from './ConsoleHome';
 import { TutorDrawer, useTutor, useTutorContext } from '../ui/Tutor';
 import { Toaster } from '../ui/Celebrate';
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 
 const GLOBAL = new Set(['iam', 'route53', 'cloudfront', 'billing']);
 
@@ -88,6 +89,7 @@ export default function ConsoleApp() {
       )}
       <div className="flex flex-1 min-h-0">
         <main className="flex-1 min-w-0">
+          <ErrorBoundary resetKey={location.hash.split('?')[0]}>
           <Suspense fallback={<div className="p-8">Loading…</div>}>
             <Routes>
               <Route path="/console" element={<ConsoleHome recent={recent} />} />
@@ -95,6 +97,7 @@ export default function ConsoleApp() {
               <Route path="*" element={<ConsoleHome recent={recent} />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
         </main>
         {lab && <LabDrawer labId={lab} />}
       </div>

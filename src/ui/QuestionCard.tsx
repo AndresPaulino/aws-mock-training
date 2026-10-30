@@ -4,7 +4,7 @@ import type { Question } from '../content/types';
 import { useStore } from '../store/store';
 import { isCorrect } from '../lib/adaptive';
 import { domainOf, getLesson } from '../content';
-import { Md } from './Md';
+import { Md, MdInline } from './Md';
 import { useTutor, useTutorContext } from './Tutor';
 
 export const LETTERS = 'ABCDEF';
@@ -60,10 +60,10 @@ export function QuestionCard({ q, onAnswered, review, index, total }: { q: Quest
               <button onClick={() => toggle(i)} disabled={done} role={multi ? 'checkbox' : 'radio'} aria-checked={isPicked}
                 className={`w-full text-left flex gap-3 items-start rounded-xl border-2 px-4 py-3 transition-colors ${tone}`}>
                 <span className={`shrink-0 w-7 h-7 grid place-items-center ${multi ? 'rounded-md' : 'rounded-full'} border-2 font-semibold text-sm ${isPicked ? 'bg-ink text-paper border-ink' : 'border-line'}`}>{LETTERS[i]}</span>
-                <span className="pt-0.5">{o}</span>
+                <span className="pt-0.5"><MdInline text={o} /></span>
                 {done && <span className="ml-auto shrink-0 pt-0.5">{isAns ? '✓' : isPicked ? '✕' : ''}</span>}
               </button>
-              {done && <div className={`ml-10 mt-1 mb-2 text-sm ${isAns ? 'text-ok' : 'text-muted'}`}>{q.optionExplanations[i]}</div>}
+              {done && <div className={`ml-10 mt-1 mb-2 text-sm ${isAns ? 'text-ok' : 'text-muted'}`}><MdInline text={q.optionExplanations[i]} /></div>}
             </div>
           );
         })}
