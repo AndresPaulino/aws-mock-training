@@ -1,0 +1,305 @@
+                                   AWS SAA-C03 Study Guide
+
+                      Module 5
+           Gap-Closing Supplement
+
+Aligned to the official SAA-C03 exam guide · In-scope services not yet covered ·
+Thinly covered task-statement concepts · Out-of-scope services to skip · Naming
+
+                                                updates
+
+SAA-C03 Study Guide -- Module 5: Gap-Closing Supplement  Page 1
+1. Why This Module Exists
+
+The official exam guide publishes an explicit in-scope service list plus task statements per domain. Modules 1­4 and the
+cheat sheet cover every task statement, but 14 in-scope services received no coverage and five concepts were treated
+thinly. This module closes those gaps so nothing on the official list is unfamiliar on exam day. These services appear
+mostly as distractors or single-question one-liners; recognize them, know their one sentence, and move on.
+
+2. In-Scope Services Not Previously Covered
+
+2.1 Networking
+
+Service               What it is                                                    Exam trigger
+AWS Client VPN
+                      Managed OpenVPN-based endpoint letting individual             'Remote employees need secure access to
+AWS Resource          users (laptops) connect securely into a VPC over TLS;         private VPC resources from anywhere'  Client
+Access Manager        authenticates via AD, mutual certs, or SAML/IAM Identity      VPN. 'Connect the data center'  Site-to-Site
+(RAM)                 Center. Contrast: Site-to-Site VPN connects NETWORKS          VPN
+                      (office  VPC); Client VPN connects PEOPLE (remote
+                      workers  VPC). Split-tunnel option sends only VPC traffic
+                      through the tunnel
+
+                      Share AWS resources across accounts/OUs in an                 'Multiple accounts must launch resources into
+                      Organization without duplicating them: subnets (VPC           the SAME VPC/subnets'  VPC sharing via
+                      sharing), Transit Gateways, Route 53 Resolver rules,          RAM. 'Share the Transit Gateway with all
+                      License Manager configs, Capacity Reservations,               accounts'  RAM
+                      Outposts. The receiving account uses the resource as if its
+                      own
+
+2.2 Management & governance
+
+Service               What it is                                                    Exam trigger
+
+AWS Service Catalog   Curated catalog of approved CloudFormation-based              'Let developers deploy pre-approved
+                      products that end users self-provision; admins control        architectures without giving them broad IAM
+                      versions, constraints (allowed instance sizes, regions), and  rights' / 'enforce standardized, compliant
+                      launch roles; users don't need IAM permissions on the         provisioning'
+                      underlying resources
+
+AWS License Manager   Track and enforce software license usage (BYOL                'Track Windows/SQL Server/Oracle licenses',
+                      cores/sockets/vCPUs) across accounts; ties to Dedicated       'prevent exceeding license entitlements'
+                      Hosts for host-affinity licenses; can block launches that
+                      would breach limits
+
+AWS Well-Architected  Free console tool: answer questions per pillar about a        'Review a workload against AWS best
+Tool                  workload, get risks (HRIs) and improvement plans against      practices' / 'document architectural risks'
+                      the Well-Architected Framework
+
+Amazon Managed        Managed Grafana dashboards querying CloudWatch,               'Existing Grafana dashboards / visualize
+Grafana               Prometheus, X-Ray, OpenSearch, Timestream etc.; SSO           metrics from multiple sources without managing
+                      via Identity Center                                           servers'
+
+Amazon Managed        Managed, scalable Prometheus-compatible metrics store,        'Kubernetes metrics with Prometheus, no
+Service for           typically for EKS/container metrics; PromQL; pairs with       self-managed server'
+Prometheus            Managed Grafana
+
+2.3 Containers & compute
+
+SAA-C03 Study Guide -- Module 5: Gap-Closing Supplement                                                                          Page 2
+Service               What it is                                                     Exam trigger
+
+Amazon ECS            Run ECS tasks on YOUR on-prem servers/VMs                      'Use the same ECS tooling for containers in the
+Anywhere              (registered as external instances via SSM agent) while the     data center'
+                      ECS control plane stays in AWS
+
+Amazon EKS            Deploy and operate Kubernetes clusters on-prem (bare           'Run Kubernetes on-prem with AWS-supported
+Anywhere              metal/VMware) using EKS-consistent tooling; AWS                distribution and tooling'
+                      support available
+
+Amazon EKS Distro     The open-source Kubernetes distribution EKS itself uses; 'Same K8s version/patches as EKS,
+
+                      run it anywhere yourself                                       self-managed anywhere'
+
+VMware Cloud on       VMware's SDDC stack (vSphere, vSAN, NSX) running on            'Migrate thousands of VMware VMs quickly
+AWS                   dedicated AWS bare-metal hosts; migrate VMs with               without changing tooling or converting them'.
+                      vMotion/HCX with no re-platforming; integrates with native     (Rehost/relocate strategy)
+                      AWS services
+
+AWS Serverless        Marketplace of deployable serverless apps/components           'Reuse/share serverless application templates
+                                                                                     across teams'
+Application Repository packaged with SAM; publish privately or publicly
+
+2.4 Integration, analytics, media, mobile
+
+Service               What it is                                                     Exam trigger
+
+Amazon AppFlow        No-code managed integration moving data between SaaS           'Ingest Salesforce/SaaS data into S3 or
+                      apps (Salesforce, ServiceNow, Slack, Zendesk, SAP) and         Redshift without writing integration code'
+                      AWS services (S3, Redshift), on schedule or event; field
+                      mapping, filtering, encryption in flight; PrivateLink-capable
+
+AWS Data Exchange     Find, subscribe to, and use third-party datasets (financial, 'Consume licensed third-party datasets for
+                      healthcare, weather) delivered into S3 or via API; providers analytics'
+                      publish data products
+
+Amazon Kinesis Video  Ingest, store, and process video/audio streams from            'Stream video from IoT cameras for ML
+Streams               cameras and devices; integrates with Rekognition Video         analysis'
+                      and SageMaker; WebRTC for two-way real-time
+
+Amazon Elastic        Legacy managed media transcoding (convert videos to            'Convert uploaded videos into multiple formats
+Transcoder            formats/resolutions for devices) from S3 to S3. AWS now        for mobile/web playback'
+                      steers new work to MediaConvert (out of scope), but
+                      Transcoder remains in scope
+
+AWS Device Farm       Test mobile and web apps on real physical devices              'Test the app on many real phone models
+                      (iOS/Android/browsers) hosted by AWS; automated and            without buying devices'
+                      remote manual testing
+
+EXAM TIP: Most of these show up as distractors. The skill is recognizing what each one is NOT: Client VPN is not
+Site-to-Site; RAM shares resources, it doesn't move them; Service Catalog provisions approved stacks, it isn't a
+config-compliance tool (that's Config); Elastic Transcoder converts video, it doesn't stream it.
+
+3. Task-Statement Concepts Covered Thinly Before
+
+3.1 Immutable infrastructure (Domain 2, Task 2.2)
+
+Mutable infrastructure is patched, updated, and reconfigured in place over time -- servers drift, and 'it works on server 3
+but not server 7' becomes normal. Immutable infrastructure is never modified after deployment: to change anything, you
+build a new artifact (a new AMI, container image, or Lambda version) and replace the running fleet, then discard the old
+one. Benefits: consistent, reproducible, easy rollback (redeploy the previous artifact), no configuration drift, and it forces
+statelessness.
+
+SAA-C03 Study Guide -- Module 5: Gap-Closing Supplement                                                                          Page 3
+ · AWS building blocks: golden AMIs via EC2 Image Builder  launch template new version  ASG instance refresh
+    (rolling replacement); container images in ECR  new ECS task definition revision; CloudFormation for reproducible
+    stacks; blue/green deployments via ALB target groups or Route 53 weighted records.
+
+EXAM TIP: 'Ensure all instances are identical / eliminate configuration drift / rapid reliable rollback'  immutable
+infrastructure: bake an AMI, deploy via launch template + instance refresh; never SSH in to patch.
+
+3.2 Service quotas & throttling for standby environments (Task 2.2)
+
+Service quotas (limits) are PER ACCOUNT PER REGION: on-demand vCPUs, Elastic IPs (5), VPCs (5), Lambda
+concurrency (1,000), etc. A DR environment that sits idle in a second Region often has DEFAULT quotas there -- so
+when you fail over and try to scale to production size, launches fail against the limit. Design step: request quota increases
+in the DR Region ahead of time, matching production, and monitor quota usage with Service Quotas + CloudWatch
+alarms (and Trusted Advisor service-limit checks).
+
+ · Throttling: API Gateway (account and per-method/usage-plan limits), Lambda concurrency limits, DynamoDB capacity,
+    and AWS API rate limits all return throttling errors; clients should implement exponential backoff with jitter. In a standby
+    failover, verify these limits are raised in the DR Region too.
+
+EXAM TIP: 'Failover to the secondary Region failed to scale'  service quotas were never raised there. 'Protect backend
+from being overwhelmed'  API Gateway throttling / usage plans.
+
+3.3 NAT instance vs NAT Gateway (Domain 4, Task 4.4)
+
+Managed?   NAT Gateway                                          NAT instance
+Cost       Fully managed, scales to 100 Gbps automatically, HA
+Bandwidth  within its AZ                                        An EC2 instance you patch, size, and monitor; single
+Extras     Hourly (~$0.045) + per-GB processed; can dominate    point of failure unless you script failover
+Choose     small workloads' bills
+           Up to 100 Gbps                                       Just the instance cost (t3/t4g.nano is a few dollars/month)
+           Cannot be used as a bastion; no SGs (use NACLs)      -- cheaper for low-traffic dev/test
+
+           Production, HA, high throughput, low ops             Limited by instance type
+
+                                                                Can double as a bastion host / port forwarding; has
+                                                                security groups; must disable source/destination check
+
+                                                                'Minimize cost for low-traffic non-production' or 'need
+                                                                bastion + NAT on one box'
+
+· NAT Gateway placement cost trap: one shared NAT Gateway across AZs is cheapest in hours but incurs cross-AZ
+   data charges and is a single point of failure; one per AZ costs more hours but avoids cross-AZ fees and survives AZ
+   loss. Production answer = one per AZ; cost-only dev answer = one shared (or a NAT instance).
+
+3.4 VPN bandwidth: single vs multiple tunnels (Task 4.4)
+
+A Site-to-Site VPN connection gives two tunnels of ~1.25 Gbps each, but with a Virtual Private Gateway only one is active
+per connection (active/standby). To exceed 1.25 Gbps, terminate VPNs on a Transit Gateway and enable ECMP
+(equal-cost multi-path): multiple VPN connections/tunnels aggregate bandwidth (e.g., 4 connections  10 Gbps). Choosing
+Direct Connect speeds: pick hosted (50 Mbps­10 Gbps) for moderate steady loads, dedicated 1/10/100/400 Gbps for
+large; add a second connection or VPN for resilience.
+
+EXAM TIP: 'VPN throughput is capped around 1.25 Gbps and must increase'  multiple VPN connections on Transit
+Gateway with ECMP. 'Consistent multi-Gbps, low latency'  Direct Connect.
+
+3.5 Migrating applications into containers (Task 2.1)
+
+Containerizing a legacy app: write a Dockerfile capturing runtime + dependencies; externalize configuration (environment
+variables, SSM Parameter Store, Secrets Manager) and state (S3, EFS for shared files, RDS/DynamoDB for data) so the
+container is disposable; push the image to ECR; run on ECS (Fargate for least ops, EC2 for cost/GPU) or EKS if the team
+
+SAA-C03 Study Guide -- Module 5: Gap-Closing Supplement         Page 4
+is Kubernetes-native; front with an ALB and scale on CPU/requests. AWS App2Container (A2C) automates discovering
+Java/.NET apps on servers, containerizing them, and generating ECS/EKS deployment artifacts. Docker Compose files
+can be deployed to ECS with minimal change.
+
+EXAM TIP: 'Modernize a legacy Java/.NET app into containers with minimal manual effort'  App2Container  ECR 
+ECS/EKS. Stateful pieces must be externalized first -- the same statelessness rule as horizontal scaling.
+
+3.6 Secure access to ingestion points (Domain 3, Task 3.5)
+
+Data lakes and streams need locked-down entry points: Kinesis and Firehose via IAM roles/policies and VPC interface
+endpoints (no public internet path); S3 ingest via bucket policies requiring TLS + specific principals, presigned URLs for
+external uploaders, or Transfer Family with SFTP keys; Lake Formation for column/row-level permissions once data lands;
+KMS encryption at rest across all of it; CloudTrail data events for audit of who read what.
+
+4. Naming Updates & Out-of-Scope Services
+
+4.1 Names that changed                                   Current name in the exam guide
+                                                         Amazon Quick (same BI/dashboard service)
+ Old name (you may see in courses)                       Amazon Data Firehose
+ Amazon QuickSight                                       Amazon Managed Service for Apache Flink
+ Amazon Kinesis Data Firehose                            Amazon SageMaker AI
+ Amazon Kinesis Data Analytics                           AWS IAM Identity Center
+ Amazon SageMaker                                        Origin Access Control (OAC) -- the recommended replacement
+ AWS Single Sign-On (SSO)                                AWS Application Migration Service (MGN); DR variant = AWS
+ CloudFront Origin Access Identity (OAI)                 Elastic Disaster Recovery
+ AWS CloudEndure / Server Migration Service              Retired -- multi-PB now via fleets of Snowball Edge devices
+
+ Snowmobile
+
+4.2 Officially OUT of scope -- don't spend study time here
+
+AWS lists these as out of scope. If any appear in an answer choice, they're distractors unless the question is explicitly
+about them (it won't be):
+
+ · Developer tools: CodeCommit, CodeBuild, CodeDeploy, CodeArtifact, CDK, CloudShell, Fault Injection Simulator,
+    SDKs/Tools.
+
+ · Compute/Database: Lightsail, RDS on VMware.
+ · ML: Personalize, DevOps Guru, HealthLake, Elastic Inference, Inferentia, DLAMI/containers,
+
+    MXNet/PyTorch/TensorFlow on AWS, DeepComposer.
+ · Media: all Elemental services (MediaConvert, MediaLive, MediaPackage, MediaTailor, MediaConnect), IVS.
+ · Other: all IoT services, MWAA (Airflow), Managed Blockchain, Sumerian, GameLift, Location Service, Cloud Map,
+
+    Migration Evaluator, Distro for OpenTelemetry, Console Mobile App, Braket, Ground Station.
+Earlier modules briefly mentioned Lightsail, CDK, Personalize, Forecast, Fraud Detector, Kendra, Bedrock, QLDB, and
+Timestream. Those are either out of scope or absent from the in-scope list; treat them as recognition-only and don't study
+them further.
+
+5. Practice Questions on This Module
+
+SAA-C03 Study Guide -- Module 5: Gap-Closing Supplement  Page 5
+Practice Q1. A company's security team must let 300 remote employees reach private EC2 resources in a VPC from
+home laptops, authenticating with the corporate identity provider. Which service?
+
+   # Site-to-Site VPN -- connects a network (customer gateway device), not individual laptops.
+   # Bastion host with SSH keys -- unmanaged keys, no IdP integration, exposes port 22.
+    AWS Client VPN endpoint with SAML federation to the IdP, associated with the VPC subnets. People-to-VPC = Client
+   VPN.
+
+Practice Q2. An organization wants developers in 30 accounts to launch only pre-approved, standardized environments
+(specific instance sizes, tagged, encrypted) without granting them permissions to create arbitrary resources.
+
+   # AWS Config rules -- detect non-compliance after the fact; don't govern provisioning.
+   # Give developers CloudFormation + broad IAM -- arbitrary resources become possible.
+    AWS Service Catalog portfolios shared to the accounts, with launch constraints and a launch role that holds the
+   permissions. Self-service provisioning of approved products = Service Catalog.
+
+Practice Q3. A pilot-light DR design in a second Region failed during a test: the Auto Scaling group could not launch
+beyond 20 instances although production runs 80. Most likely cause and fix?
+
+   # Wrong instance type -- would fail at instance 1, not 20.
+   # Route 53 misconfiguration -- unrelated to launch failures.
+    Default EC2 vCPU service quota in the DR Region; request quota increases matching production ahead of time and
+   alarm on quota utilization. Quotas are per-Region and are a classic DR blind spot.
+
+Practice Q4. A dev/test VPC with minimal outbound traffic pays more for its NAT Gateway than for its instances. Reduce
+cost with minimal risk to a non-production environment.
+
+   # Remove outbound access -- breaks package installs.
+   # Add a NAT Gateway per AZ -- increases hourly cost.
+    Replace with a small NAT instance (t4g.nano) or a single shared NAT Gateway; for low-traffic non-production the
+   instance is cheapest. The guide explicitly calls out NAT instance vs NAT Gateway cost.
+
+Practice Q5. A platform team wants all accounts to launch workloads into centrally managed subnets in a shared
+networking account, so network controls live in one place. What enables this?
+
+   # VPC peering from each account -- separate VPCs per account, not shared subnets.
+   # Transit Gateway -- connects VPCs; doesn't let other accounts launch into your subnets.
+    AWS Resource Access Manager to share the VPC subnets with the Organization (VPC sharing). Participants launch
+   resources in the shared subnets; the owner controls routing, NACLs, and endpoints.
+
+Practice Q6. Marketing needs Salesforce opportunity data landed in S3 nightly for analysis in Athena, with no custom
+integration code. Which service?
+
+   # Lambda calling the Salesforce API -- custom code, auth handling, pagination, maintenance.
+   # DataSync -- file/object transfer between storage systems, not SaaS APIs.
+    Amazon AppFlow flow from Salesforce to S3 on a schedule, optionally with field mapping and Parquet output. SaaS 
+   AWS with no code = AppFlow.
+
+Coverage check -- you're now aligned to the official guide
+
+ · All 14 task statements across the four domains: covered in Modules 1­4 and this supplement.
+ · All services on the official in-scope list: at least a one-liner recognition, with depth proportional to exam weight.
+ · Out-of-scope services identified so you don't waste study hours.
+Final sequence: Modules 1­4  this supplement  labs  timed practice exams, using the cheat sheet for daily recall
+drills.
+
+SAA-C03 Study Guide -- Module 5: Gap-Closing Supplement  Page 6
+

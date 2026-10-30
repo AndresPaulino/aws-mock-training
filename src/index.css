@@ -1,0 +1,105 @@
+@import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/open-sans/400.css";
+@import "@fontsource/open-sans/600.css";
+@import "@fontsource/open-sans/700.css";
+@import "@xyflow/react/dist/style.css";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  --paper: #f3f5f8;
+  --surface: #ffffff;
+  --sunk: #e9edf2;
+  --ink: #13213a;
+  --muted: #5a6678;
+  --line: #d6dde6;
+  --xp: #ff9900;
+  --xp-ink: #8a4b00;
+  --ok: #1a8754;
+  --bad: #c92a3a;
+  --d-secure: #6e56cf;
+  --d-resilient: #d6336c;
+  --d-performance: #1c7ed6;
+  --d-cost: #0ca678;
+  --d-foundations: #5a6678;
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  --paper: #0d1524;
+  --surface: #152036;
+  --sunk: #0a111e;
+  --ink: #e6ecf5;
+  --muted: #94a2b8;
+  --line: #26344d;
+  --xp: #ffad33;
+  --xp-ink: #ffd08a;
+  --ok: #40c07e;
+  --bad: #ff6b7a;
+  --d-secure: #9d8cf0;
+  --d-resilient: #f06595;
+  --d-performance: #4dabf7;
+  --d-cost: #38d9a9;
+  --d-foundations: #94a2b8;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-xp: var(--xp);
+  --color-xp-ink: var(--xp-ink);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --color-secure: var(--d-secure);
+  --color-resilient: var(--d-resilient);
+  --color-performance: var(--d-performance);
+  --color-cost: var(--d-cost);
+  --font-display: "Bricolage Grotesque Variable", "Segoe UI", sans-serif;
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
+  --font-aws: "Open Sans", "Amazon Ember", "Helvetica Neue", Arial, sans-serif;
+}
+
+html, body, #root { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+:focus-visible { outline: 2px solid var(--xp); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+.prose-lite p { margin: 0 0 0.85em; line-height: 1.65; }
+.prose-lite ul { margin: 0 0 0.85em 1.1em; list-style: disc; }
+.prose-lite li { margin: 0.2em 0; line-height: 1.55; }
+.prose-lite code { font-family: var(--font-mono); font-size: 0.88em; background: var(--sunk); padding: 0.1em 0.35em; border-radius: 4px; }
+.prose-lite strong { font-weight: 600; }
+
+/* Mock AWS console (Cloudscape-like) */
+.aws { font-family: var(--font-aws); color: #000716; background: #f2f3f3; font-size: 14px; }
+.aws a, .aws .link { color: #0972d3; cursor: pointer; }
+.aws a:hover, .aws .link:hover { text-decoration: underline; }
+.aws-btn { border: 2px solid #0972d3; color: #0972d3; background: #fff; border-radius: 20px; padding: 3px 18px; font-weight: 700; font-size: 14px; white-space: nowrap; }
+.aws-btn:hover:not(:disabled) { background: #f2f8fd; color: #033160; border-color: #033160; }
+.aws-btn-primary { background: #ff9900; border-color: #ff9900; color: #000716; }
+.aws-btn-primary:hover:not(:disabled) { background: #ec7211; border-color: #ec7211; color: #000716; }
+.aws-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.aws-btn-danger { border-color: #d91515; color: #d91515; }
+.aws-input { border: 1px solid #7d8998; border-radius: 8px; padding: 4px 10px; background: #fff; width: 100%; font-size: 14px; }
+.aws-input:focus { outline: none; border-color: #0972d3; box-shadow: 0 0 0 1px #0972d3; }
+.aws-panel { background: #fff; border-radius: 16px; box-shadow: 0 1px 1px 0 rgba(0, 28, 36, 0.3), 1px 1px 1px 0 rgba(0, 28, 36, 0.15); }
+.aws-table th { text-align: left; font-weight: 700; color: #414d5c; padding: 8px 12px; border-bottom: 1px solid #e9ebed; white-space: nowrap; }
+.aws-table td { padding: 8px 12px; border-bottom: 1px solid #e9ebed; vertical-align: top; }
+.aws-table tr:hover td { background: #f4f4f4; }
+.aws-label { font-weight: 700; color: #000716; display: block; margin-bottom: 2px; }
+.aws-hint { color: #5f6b7a; font-size: 12px; }
+
+@keyframes packet { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+.animate-pop { animation: pop 0.45s ease-out both; }

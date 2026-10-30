@@ -4,6 +4,7 @@ import { readdirSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { outline } from '../src/content/outline.ts';
+import { serviceIds, genericIcons } from '../src/content/service-ids.ts';
 import type { Lesson, Question, Flashcard, ServiceInfo, Pattern, Scenario, Diagram } from '../src/content/types.ts';
 
 const root = join(fileURLToPath(import.meta.url), '..', '..', 'src', 'content');
@@ -15,7 +16,7 @@ async function load<T>(dir: string): Promise<{ file: string; items: T[] }[]> {
   const full = join(root, dir);
   if (!existsSync(full)) return [];
   const out = [];
-  for (const f of readdirSync(full).filter((f) => f.endsWith('.ts'))) {
+  for (const f of readdirSync(full).filter((f) => f.endsWith('.ts') && `${dir}/${f}`.includes(filter))) {
     const mod = await import(pathToFileURL(join(full, f)).href);
     out.push({ file: `${dir}/${f}`, items: (mod.default ?? []) as T[] });
   }
@@ -23,11 +24,16 @@ async function load<T>(dir: string): Promise<{ file: string; items: T[] }[]> {
 }
 async function loadOne<T>(file: string): Promise<T[]> {
   const full = join(root, file);
-  if (!existsSync(full)) return [];
+  if (!existsSync(full) || !(file.includes(filter) || filter.startsWith('scenarios'))) return [];
   return ((await import(pathToFileURL(full).href)).default ?? []) as T[];
 }
 
 const lessonIds = new Set(outline.map((o) => o.id));
+const canonical = new Set<string>(serviceIds);
+const iconIds = new Set<string>([...serviceIds, ...genericIcons]);
+function refServices(where: string, ids: string[]) {
+  for (const id of ids ?? []) if (!canonical.has(id)) err(where, `unknown ServiceId "${id}" (see service-ids.ts)`);
+}
 const seen = new Set<string>();
 function unique(where: string, id: string) {
   if (!id) return err(where, 'missing id');
@@ -48,6 +54,7 @@ function checkDiagram(where: string, d: Diagram) {
   for (const g of d.groups ?? []) ids.add(g.id);
   for (const n of d.nodes) {
     ids.add(n.id);
+    if (n.icon && !iconIds.has(n.icon)) err(where, `node ${n.id} unknown icon "${n.icon}"`);
     if (n.x < 0 || n.x > 100 || n.y < 0 || n.y > 60) err(where, `node ${n.id} outside 100x60 canvas`);
   }
   for (const e of d.edges) {
@@ -73,6 +80,7 @@ for (const { file, items } of await load<Lesson>('lessons')) {
     unique(w, l.id);
     if (!lessonIds.has(l.id)) err(w, 'id not in outline.ts');
     nonEmpty(w, l as never, ['title', 'summary', 'analogy', 'sections', 'keyFacts', 'examTips', 'pitfalls', 'services']);
+    refServices(w, l.services);
     if (l.diagram) checkDiagram(w, l.diagram);
     for (const s of l.sections ?? []) {
       if (s.table) for (const r of s.table.rows) if (r.length !== s.table.headers.length) err(w, `table row length mismatch in "${s.heading}"`);
@@ -88,6 +96,7 @@ for (const { file, items } of await load<Question>('questions')) {
     unique(w, q.id);
     nonEmpty(w, q as never, ['stem', 'options', 'answer', 'explanation', 'optionExplanations', 'lessonIds']);
     refLessons(w, q.lessonIds);
+    refServices(w, q.tags);
     if (!['secure', 'resilient', 'performance', 'cost'].includes(q.domain)) err(w, `bad domain ${q.domain}`);
     if (q.optionExplanations?.length !== q.options?.length) err(w, 'optionExplanations length != options length');
     for (const a of q.answer ?? []) if (a < 0 || a >= q.options.length) err(w, `answer index ${a} out of range`);
@@ -110,16 +119,18 @@ for (const { file, items } of await load<Flashcard>('flashcards')) {
 }
 
 const services = want('services') ? await loadOne<ServiceInfo>('services.ts') : [];
-const serviceIds = new Set(services.map((s) => s.id));
+const catalogIds = new Set(services.map((s) => s.id));
 counts.services = services.length;
 for (const s of services) {
   const w = `services.ts ${s.id}`;
   unique(w, 'svc:' + s.id);
+  if (!canonical.has(s.id)) err(w, 'id not in service-ids.ts');
   nonEmpty(w, s as never, ['name', 'short', 'category', 'oneLiner', 'whatItIs', 'pricing']);
   refLessons(w, s.lessonIds);
-  for (const r of s.related ?? []) if (!serviceIds.has(r)) err(w, `related unknown service ${r}`);
+  for (const r of s.related ?? []) if (!canonical.has(r)) err(w, `related unknown service ${r}`);
 }
-const knownService = (w: string, id: string) => { if (serviceIds.size && !serviceIds.has(id)) err(w, `unknown service ${id}`); };
+const knownService = (w: string, id: string) => { if (!canonical.has(id)) err(w, `unknown service ${id}`); };
+if (want('services') && services.length) for (const id of canonical) if (!catalogIds.has(id)) err('services.ts', `missing entry for ${id}`);
 
 if (want('patterns')) for (const p of await loadOne<Pattern>('patterns.ts')) {
   counts.patterns = (counts.patterns ?? 0) + 1;
